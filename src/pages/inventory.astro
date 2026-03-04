@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { ProductManager } from '../components/react/inventory/ProductManager';
+---
+
+<DashboardLayout title="Inventario">
+  <div class="mb-6">
+    <h1 class="text-3xl font-black text-neutral-900 tracking-tight">Inventario</h1>
+    <p class="text-neutral-500 mt-1">Gestiona los productos, ajusta precios y revisa el stock.</p>
+  </div>
+
+  <div class="h-[calc(100vh-12rem)]">
+    <!-- Componente React Isla -->
+    <ProductManager client:load />
+  </div>
+</DashboardLayout>

@@ -1,0 +1,13 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { Dashboard } from '../components/react/dashboard/Dashboard';
+---
+
+<DashboardLayout title="Dashboard">
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-neutral-900 tracking-tight">Bienvenido al Panel</h1>
+    <p class="text-neutral-500 mt-1">Resumen general del inventario y facturación de La Casa del Bolígrafo.</p>
+  </div>
+
+  <Dashboard client:load />
+</DashboardLayout>

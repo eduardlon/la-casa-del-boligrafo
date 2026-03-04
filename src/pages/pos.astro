@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { PointOfSale } from '../components/react/pos/PointOfSale';
+---
+
+<DashboardLayout title="Punto de Venta">
+  <div class="mb-6">
+    <h1 class="text-3xl font-black text-neutral-900 tracking-tight">Punto de Venta (POS)</h1>
+    <p class="text-neutral-500 mt-1">Agrega productos y genera la factura de venta.</p>
+  </div>
+
+  <!-- Contenedor del POS -->
+  <div class="h-[calc(100vh-12rem)]">
+    <PointOfSale client:load />
+  </div>
+</DashboardLayout>

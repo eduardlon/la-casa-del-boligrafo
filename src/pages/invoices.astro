@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+import { InvoiceManager } from '../components/react/invoices/InvoiceManager';
+---
+
+<DashboardLayout title="Facturas">
+  <div class="mb-6">
+    <h1 class="text-3xl font-black text-neutral-900 tracking-tight">Registro de Facturas</h1>
+    <p class="text-neutral-500 mt-1">Descarga PDFs, visualiza ventas pendientes y confirma pagos.</p>
+  </div>
+
+  <div class="h-[calc(100vh-12rem)]">
+    <InvoiceManager client:load />
+  </div>
+</DashboardLayout>

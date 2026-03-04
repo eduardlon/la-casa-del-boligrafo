@@ -1,5 +1,9 @@
 # build output
 dist/
+.vercel/
+
+# local database
+sqlite.db
 
 # generated types
 .astro/

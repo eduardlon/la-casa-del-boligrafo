@@ -268,17 +268,15 @@ export const POST: APIRoute = async ({ request }) => {
                 }
 
                 try {
-                    // Start database transaction
-                    const invoiceResult = db.transaction((tx) => {
+                    // Start database transaction async
+                    const invoiceResult = await db.transaction(async (tx) => {
                         let totalAmount = 0;
                         const validItems = [];
 
                         // Validate and prepare items
                         for (const item of itemsToInvoice) {
-                            // Find product by ref directly using SQLite synchronous getter if we were entirely sync.
-                            // But here we've been using await for drizzle queries. Let's use async safely inside the transaction block if supported,
-                            // Drizzle better-sqlite3 `tx` uses sync .get(). Wait, standard drizzle requires `async` inside `transaction` if using Promises? No, better-sqlite3 is sync.
-                            const prod = tx.select().from(products).where(eq(products.reference, item.reference)).get();
+                            const prodArray = await tx.select().from(products).where(eq(products.reference, item.reference));
+                            const prod = prodArray[0];
 
                             if (!prod) {
                                 throw new Error(`El producto con referencia ${item.reference} no fue encontrado.`);
@@ -300,34 +298,34 @@ export const POST: APIRoute = async ({ request }) => {
                         }
 
                         // Create invoice (set to 'paid' immediately)
-                        const newInvoice = tx.insert(invoices).values({
+                        const newInvoice = await tx.insert(invoices).values({
                             userId: 'ai-assistant',
                             customerName,
                             customerDoc,
                             customerEmail: '',
                             total: totalAmount,
                             status: 'paid',
-                        }).returning({ id: invoices.id }).get();
+                        }).returning({ id: invoices.id });
 
-                        if (!newInvoice) throw new Error("Error interno al registrar factura.");
+                        if (!newInvoice || newInvoice.length === 0) throw new Error("Error interno al registrar factura.");
+                        const createdId = newInvoice[0].id;
 
                         // Insert items and reduce stock
                         for (const vi of validItems) {
-                            tx.insert(invoiceItems).values({
-                                invoiceId: newInvoice.id,
+                            await tx.insert(invoiceItems).values({
+                                invoiceId: createdId,
                                 productId: vi.productId,
                                 quantity: vi.quantity,
                                 unitPrice: vi.unitPrice,
                                 subtotal: vi.subtotal,
-                            }).run();
+                            });
 
-                            tx.update(products)
+                            await tx.update(products)
                                 .set({ quantity: sql`${products.quantity} - ${vi.quantity}` })
-                                .where(eq(products.id, vi.productId))
-                                .run();
+                                .where(eq(products.id, vi.productId));
                         }
 
-                        return { id: newInvoice.id, total: totalAmount };
+                        return { id: createdId, total: totalAmount };
                     });
 
                     const idPrefix = invoiceResult.id.split('-')[0].toUpperCase();

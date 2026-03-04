@@ -18,20 +18,19 @@ export const POST: APIRoute = async ({ params }) => {
             return new Response(JSON.stringify({ error: 'Factura ya está pagada' }), { status: 400 });
         }
 
-        // Run transaction synchronously to mark as paid and deduct stock
-        db.transaction((tx) => {
+        // Run transaction async for LibSQL/Turso
+        await db.transaction(async (tx) => {
             // 1. Update invoice status
-            tx.update(invoices).set({ status: 'paid' }).where(eq(invoices.id, invoiceId)).run();
+            await tx.update(invoices).set({ status: 'paid' }).where(eq(invoices.id, invoiceId));
 
             // 2. Fetch items for this invoice
-            const items = tx.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId)).all();
+            const items = await tx.select().from(invoiceItems).where(eq(invoiceItems.invoiceId, invoiceId));
 
             // 3. Reduce stock for each item
             for (const item of items) {
-                tx.update(products)
+                await tx.update(products)
                     .set({ quantity: sql`${products.quantity} - ${item.quantity}` })
-                    .where(eq(products.id, item.productId))
-                    .run();
+                    .where(eq(products.id, item.productId));
             }
         });
 

@@ -14,39 +14,38 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         // Run transaction
-        // Run transaction synchronously for better-sqlite3
-        const invoiceId = db.transaction((tx) => {
+        // Run transaction async for LibSQL
+        const invoiceId = await db.transaction(async (tx) => {
             // 1. Create invoice (immediately paid)
-            const newInvoice = tx.insert(invoices).values({
+            const newInvoice = await tx.insert(invoices).values({
                 userId: 'temp-user-id', // Cambiar luego por auth
                 customerName,
                 customerDoc,
                 customerEmail,
                 total,
                 status: 'paid', // <-- Set to paid directly
-            }).returning({ id: invoices.id }).get();
+            }).returning({ id: invoices.id });
 
-            if (!newInvoice) {
+            if (!newInvoice || newInvoice.length === 0) {
                 throw new Error("Failed to insert invoice");
             }
-            const id = newInvoice.id;
+            const id = newInvoice[0].id;
 
             // 2. Insert items and reduce stock
             for (const item of items) {
                 // Insert item
-                tx.insert(invoiceItems).values({
+                await tx.insert(invoiceItems).values({
                     invoiceId: id,
                     productId: item.productId,
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
                     subtotal: item.subtotal,
-                }).run();
+                });
 
                 // Deduct stock
-                tx.update(products)
+                await tx.update(products)
                     .set({ quantity: sql`${products.quantity} - ${item.quantity}` })
-                    .where(eq(products.id, item.productId))
-                    .run();
+                    .where(eq(products.id, item.productId));
             }
 
             return id;

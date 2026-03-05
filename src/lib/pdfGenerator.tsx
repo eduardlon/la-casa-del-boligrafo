@@ -1,317 +1,443 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, pdf, Image } from '@react-pdf/renderer';
 
-// ─── COLOR PALETTE ───────────────────────────────────────────────────────────
-const C = {
-    black: '#111111',
-    dark: '#1f2937',
-    mid: '#6b7280',
-    light: '#9ca3af',
-    border: '#e5e7eb',
-    bg: '#f9fafb',
+// ─── DESIGN TOKENS ───────────────────────────────────────────────────────────
+const T = {
+    // Core palette
+    ink: '#0a0a0a',
+    graphite: '#1e1e2d',
+    slate: '#3a3a4a',
+    muted: '#7b7b8e',
+    subtle: '#a8a8b8',
+    divider: '#e8e8f0',
+    surface: '#f5f5fa',
     white: '#ffffff',
-    rowAlt: '#f3f4f6',
+    // Accent strip
+    accent: '#1e1e2d',
+    accentAlt: '#2e2e45',
+    // Gold highlight on totals
+    gold: '#c8a84b',
 };
 
 const styles = StyleSheet.create({
+
+    // ─── PAGE ────────────────────────────────────────────────────────────────
     page: {
-        paddingHorizontal: 36,
-        paddingTop: 30,
-        paddingBottom: 60,
-        fontSize: 9,
+        backgroundColor: T.white,
         fontFamily: 'Helvetica',
-        color: C.dark,
-        backgroundColor: C.white,
+        fontSize: 9,
+        color: T.ink,
     },
 
-    // ─── HEADER ────────────────────────────────────────────────────────────────
+    // ─── TOP ACCENT BAR ──────────────────────────────────────────────────────
+    topBar: {
+        height: 5,
+        backgroundColor: T.accent,
+    },
+
+    // ─── HEADER ──────────────────────────────────────────────────────────────
     header: {
+        backgroundColor: T.graphite,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 18,
-        paddingBottom: 16,
-        borderBottom: `2px solid ${C.black}`,
+        alignItems: 'center',
+        paddingHorizontal: 36,
+        paddingVertical: 22,
     },
-    logo: { width: 130, height: 'auto' },
-    companyBlock: { marginTop: 6 },
-    companySmall: { fontSize: 7, color: C.mid, marginBottom: 1 },
+    logoBlock: { flexDirection: 'column' },
+    logo: { width: 120, height: 'auto', marginBottom: 8 },
+    companyName: {
+        fontSize: 8,
+        fontFamily: 'Helvetica-Bold',
+        color: T.white,
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+    },
+    companyTagline: { fontSize: 6.5, color: T.subtle, marginTop: 2 },
+
     invoiceBlock: { alignItems: 'flex-end' },
-    invoiceBadge: {
-        backgroundColor: C.black,
+    invoiceTitle: {
+        fontSize: 22,
+        fontFamily: 'Helvetica-Bold',
+        color: T.white,
+        letterSpacing: 2,
+        marginBottom: 4,
+    },
+    invoiceNumber: {
+        fontSize: 9,
+        color: T.subtle,
+        letterSpacing: 0.5,
+        marginBottom: 10,
+    },
+    statusBadge: {
+        backgroundColor: T.gold,
+        borderRadius: 3,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+    },
+    statusText: {
+        fontSize: 7,
+        fontFamily: 'Helvetica-Bold',
+        color: T.ink,
+        letterSpacing: 0.8,
+    },
+
+    // ─── META ROW (date, payment) ─────────────────────────────────────────────
+    metaBar: {
+        flexDirection: 'row',
+        backgroundColor: T.surface,
+        borderBottom: `1px solid ${T.divider}`,
+    },
+    metaCell: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRight: `1px solid ${T.divider}`,
+    },
+    metaCellLast: {
+        flex: 1,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    metaKey: { fontSize: 6.5, color: T.muted, letterSpacing: 0.8, marginBottom: 3 },
+    metaVal: { fontSize: 8.5, fontFamily: 'Helvetica-Bold', color: T.ink },
+
+    // ─── BODY LAYOUT ─────────────────────────────────────────────────────────
+    body: { paddingHorizontal: 36, paddingTop: 18 },
+
+    // ─── PARTIES ──────────────────────────────────────────────────────────────
+    parties: { flexDirection: 'row', marginBottom: 20 },
+    partyBox: { flex: 1, marginRight: 14 },
+    partyBoxLast: { flex: 1 },
+    partyHeader: {
+        backgroundColor: T.graphite,
         borderRadius: 4,
         paddingHorizontal: 10,
-        paddingVertical: 4,
-        marginBottom: 6,
-    },
-    invoiceBadgeText: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: C.white },
-    invoiceIdText: { fontSize: 9, color: C.mid, marginBottom: 9, textAlign: 'right' },
-    metaRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 2 },
-    metaLabel: { fontSize: 7.5, color: C.mid, width: 88, textAlign: 'right' },
-    metaValue: { fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.dark, width: 80, textAlign: 'right' },
-
-    // ─── PARTIES ───────────────────────────────────────────────────────────────
-    parties: { flexDirection: 'row', marginBottom: 14 },
-    partyCard: {
-        flex: 1,
-        backgroundColor: C.bg,
-        borderRadius: 5,
-        padding: 10,
-        border: `1px solid ${C.border}`,
-        marginRight: 8,
-    },
-    partyCardLast: {
-        flex: 1,
-        backgroundColor: C.bg,
-        borderRadius: 5,
-        padding: 10,
-        border: `1px solid ${C.border}`,
+        paddingVertical: 5,
+        marginBottom: 8,
     },
     partyTitle: {
         fontSize: 7,
         fontFamily: 'Helvetica-Bold',
-        color: C.mid,
-        letterSpacing: 0.6,
-        marginBottom: 7,
-        paddingBottom: 4,
-        borderBottom: `1px solid ${C.border}`,
+        color: T.white,
+        letterSpacing: 1.2,
     },
-    partyRow: { flexDirection: 'row', marginBottom: 3 },
-    partyLabel: { fontSize: 7.5, color: C.light, width: 70 },
-    partyValue: { flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: C.dark },
+    partyRow: { flexDirection: 'row', marginBottom: 4, alignItems: 'flex-start' },
+    partyKey: { fontSize: 7, color: T.muted, width: 68 },
+    partyVal: { flex: 1, fontSize: 7.5, fontFamily: 'Helvetica-Bold', color: T.slate },
 
-    // ─── TABLE ─────────────────────────────────────────────────────────────────
-    tableWrapper: { marginBottom: 0 },
+    // ─── SECTION DIVIDER ─────────────────────────────────────────────────────
+    divider: {
+        borderBottom: `1px solid ${T.divider}`,
+        marginBottom: 14,
+    },
+
+    // ─── TABLE ───────────────────────────────────────────────────────────────
     tableHead: {
         flexDirection: 'row',
-        backgroundColor: C.black,
-        borderRadius: 4,
-        paddingVertical: 5,
-        paddingHorizontal: 4,
-        marginBottom: 2,
+        borderBottom: `1.5px solid ${T.ink}`,
+        paddingBottom: 6,
+        marginBottom: 4,
     },
-    th: { fontSize: 7, fontFamily: 'Helvetica-Bold', color: C.white, textAlign: 'center' },
-    tableRow: { flexDirection: 'row', paddingVertical: 4, paddingHorizontal: 4, alignItems: 'center' },
-    tableRowAlt: { backgroundColor: C.rowAlt, borderRadius: 3 },
-    td: { fontSize: 7.5, textAlign: 'center', color: C.dark },
-    tdLeft: { textAlign: 'left' },
+    th: {
+        fontSize: 7,
+        fontFamily: 'Helvetica-Bold',
+        color: T.muted,
+        letterSpacing: 0.8,
+        textAlign: 'center',
+    },
+    thLeft: { textAlign: 'left' },
+    thRight: { textAlign: 'right' },
+
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: 6,
+        borderBottom: `1px solid ${T.divider}`,
+        alignItems: 'center',
+    },
+    tableRowShaded: {
+        flexDirection: 'row',
+        paddingVertical: 6,
+        borderBottom: `1px solid ${T.divider}`,
+        alignItems: 'center',
+        backgroundColor: T.surface,
+    },
+    td: { fontSize: 8, textAlign: 'center', color: T.slate },
+    tdLeft: { textAlign: 'left', color: T.ink, fontFamily: 'Helvetica-Bold' },
     tdRight: { textAlign: 'right' },
+    tdMuted: { color: T.muted },
 
     // Column widths
-    cNo: { width: '5%' },
-    cRef: { width: '11%' },
-    cDesc: { width: '34%' },
+    cNo: { width: '4%' },
+    cRef: { width: '12%' },
+    cDesc: { width: '33%' },
     cQty: { width: '7%' },
     cUM: { width: '6%' },
-    cPrice: { width: '12%' },
+    cPrice: { width: '13%' },
     cImp: { width: '9%' },
-    cSub: { width: '16%' },
+    cTotal: { width: '16%' },
 
-    // ─── BOTTOM SECTION ────────────────────────────────────────────────────────
-    bottomSection: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, alignItems: 'flex-start' },
-    noteBox: { flex: 1, marginRight: 20 },
-    noteText: { fontSize: 7.5, color: C.mid, marginBottom: 4 },
+    // ─── BOTTOM SECTION ──────────────────────────────────────────────────────
+    bottom: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 18,
+        alignItems: 'flex-start',
+    },
+    notesBox: { flex: 1, marginRight: 24 },
+    notesTitle: {
+        fontSize: 7,
+        fontFamily: 'Helvetica-Bold',
+        color: T.muted,
+        letterSpacing: 1,
+        marginBottom: 6,
+    },
+    noteItem: { fontSize: 7.5, color: T.muted, marginBottom: 4, lineHeight: 1.5 },
 
-    totalsBox: {
-        width: 200,
-        border: `1px solid ${C.border}`,
-        borderRadius: 6,
+    // Totals card
+    totalsCard: {
+        width: 210,
+        border: `1px solid ${T.divider}`,
+        borderRadius: 8,
         overflow: 'hidden',
     },
-    totalRow: {
+    totalsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderBottom: `1px solid ${C.border}`,
-    },
-    totalLabel: { fontSize: 8, color: C.mid },
-    totalValue: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: C.dark },
-    grandRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         paddingVertical: 7,
-        backgroundColor: C.black,
+        borderBottom: `1px solid ${T.divider}`,
+        backgroundColor: T.surface,
     },
-    grandLabel: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.white },
-    grandValue: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.white },
-
-    // ─── SIGNATURE ─────────────────────────────────────────────────────────────
-    sigSection: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 30,
-        paddingTop: 8,
-        borderTop: `1px solid ${C.border}`,
-    },
-    sigBox: { alignItems: 'center', width: 140 },
-    sigLine: { width: '100%', borderTop: `1px solid ${C.dark}`, marginBottom: 4 },
-    sigLabel: { fontSize: 7, color: C.mid, textAlign: 'center' },
-
-    // ─── FOOTER ────────────────────────────────────────────────────────────────
-    footer: {
-        position: 'absolute',
-        bottom: 20,
-        left: 36,
-        right: 36,
+    totalsLabel: { fontSize: 8, color: T.muted },
+    totalsValue: { fontSize: 8, fontFamily: 'Helvetica-Bold', color: T.slate },
+    grandTotalRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        borderTop: `1px solid ${C.border}`,
-        paddingTop: 6,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: T.graphite,
     },
-    footerText: { fontSize: 6.5, color: C.light },
-    footerPage: { fontSize: 6.5, color: C.light },
+    grandLabel: { fontSize: 9, fontFamily: 'Helvetica-Bold', color: T.white, letterSpacing: 0.5 },
+    grandValue: {
+        fontSize: 14,
+        fontFamily: 'Helvetica-Bold',
+        color: T.gold,
+    },
+
+    // ─── SIGNATURES ──────────────────────────────────────────────────────────
+    sigSection: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 36,
+        marginHorizontal: 36,
+    },
+    sigBox: { alignItems: 'center', width: 160 },
+    sigLineTop: {
+        width: '100%',
+        height: 1,
+        backgroundColor: T.divider,
+        marginBottom: 5,
+    },
+    sigName: {
+        fontSize: 7.5,
+        fontFamily: 'Helvetica-Bold',
+        color: T.slate,
+        textAlign: 'center',
+        marginBottom: 2,
+    },
+    sigRole: { fontSize: 6.5, color: T.muted, textAlign: 'center' },
+
+    // ─── FOOTER ──────────────────────────────────────────────────────────────
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+    },
+    footerBar: {
+        backgroundColor: T.graphite,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 36,
+        paddingVertical: 9,
+    },
+    footerLeft: { fontSize: 6.5, color: T.subtle },
+    footerRight: { fontSize: 6.5, color: T.subtle },
+    footerAccent: { height: 3, backgroundColor: T.gold },
 });
 
-interface RowProps { label: string; value: string; }
-const DataRow = ({ label, value }: RowProps) => (
+interface DRow { label: string; value: string; }
+const DRow = ({ label, value }: DRow) => (
     <View style={styles.partyRow}>
-        <Text style={styles.partyLabel}>{label}</Text>
-        <Text style={styles.partyValue}>{value}</Text>
+        <Text style={styles.partyKey}>{label}</Text>
+        <Text style={styles.partyVal}>{value}</Text>
     </View>
 );
 
 const InvoiceTemplate = ({ data }: { data: any }) => {
     const subtotal = Math.round(data.total / 1.19);
     const iva = data.total - subtotal;
-    const dateStr = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-    const invoiceRef = data.invoiceId ? data.invoiceId.split('-')[0].toUpperCase() : '001';
+    const invoiceRef = `FE-${data.invoiceId ? data.invoiceId.split('-')[0].toUpperCase() : '001'}`;
+    const dateStr = new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return (
         <Document>
             <Page size="LETTER" style={styles.page}>
 
-                {/* ─── HEADER ─── */}
+                {/* ── TOP ACCENT ── */}
+                <View style={styles.topBar} />
+
+                {/* ── DARK HEADER ── */}
                 <View style={styles.header}>
-                    <View>
+                    <View style={styles.logoBlock}>
                         <Image style={styles.logo} src="/diamante.jpg" />
-                        <View style={styles.companyBlock}>
-                            <Text style={styles.companySmall}>NIT: 19096350 | Ibagué, Tolima</Text>
-                            <Text style={styles.companySmall}>Tel: 302 2887219 | dislacasadelboligrafo@hotmail.com</Text>
-                            <Text style={styles.companySmall}>CL 145 9 26 TO 2 AP 505 - Barrio El Salado</Text>
-                            <Text style={styles.companySmall}>Actividad Económica: 4761 | Régimen Simple de Tributación</Text>
-                        </View>
+                        <Text style={styles.companyName}>La Casa del Bolígrafo</Text>
+                        <Text style={styles.companyTagline}>Distribución de artículos de escritura • NIT 19096350</Text>
                     </View>
-
                     <View style={styles.invoiceBlock}>
-                        <View style={styles.invoiceBadge}>
-                            <Text style={styles.invoiceBadgeText}>FACTURA ELECTRÓNICA</Text>
-                        </View>
-                        <Text style={styles.invoiceIdText}>FE-{invoiceRef}</Text>
-                        <View style={styles.metaRow}>
-                            <Text style={styles.metaLabel}>Fecha de Emisión</Text>
-                            <Text style={styles.metaValue}>{dateStr}</Text>
-                        </View>
-                        <View style={styles.metaRow}>
-                            <Text style={styles.metaLabel}>Forma de Pago</Text>
-                            <Text style={styles.metaValue}>Crédito 3 días</Text>
-                        </View>
-                        <View style={styles.metaRow}>
-                            <Text style={styles.metaLabel}>Medio de Pago</Text>
-                            <Text style={styles.metaValue}>Transferencia</Text>
-                        </View>
-                        <View style={styles.metaRow}>
-                            <Text style={styles.metaLabel}>Moneda</Text>
-                            <Text style={styles.metaValue}>COP</Text>
+                        <Text style={styles.invoiceTitle}>FACTURA</Text>
+                        <Text style={styles.invoiceNumber}>{invoiceRef}</Text>
+                        <View style={styles.statusBadge}>
+                            <Text style={styles.statusText}>ELECTRÓNICA DE VENTA</Text>
                         </View>
                     </View>
                 </View>
 
-                {/* ─── PARTIES ─── */}
-                <View style={styles.parties}>
-                    <View style={styles.partyCard}>
-                        <Text style={styles.partyTitle}>VENDEDOR / EMISOR</Text>
-                        <DataRow label="Razón Social" value="JOSE FRANCISCO ALVAREZ GARCIA" />
-                        <DataRow label="Nombre Com." value="LA CASA DEL BOLÍGRAFO DIAMANT'S" />
-                        <DataRow label="NIT" value="19096350" />
-                        <DataRow label="Obligación" value="IVA" />
-                        <DataRow label="Email" value="dislacasadelboligrafo@hotmail.com" />
+                {/* ── META BAR ── */}
+                <View style={styles.metaBar}>
+                    <View style={styles.metaCell}>
+                        <Text style={styles.metaKey}>FECHA DE EMISIÓN</Text>
+                        <Text style={styles.metaVal}>{dateStr}</Text>
                     </View>
-                    <View style={styles.partyCardLast}>
-                        <Text style={styles.partyTitle}>COMPRADOR / CLIENTE</Text>
-                        <DataRow label="Razón Social" value={data.customerName?.toUpperCase() || 'CONSUMIDOR FINAL'} />
-                        <DataRow label="NIT / CC" value={data.customerDoc || 'CONSUMIDOR FINAL'} />
-                        {data.customerEmail ? <DataRow label="Email" value={data.customerEmail} /> : null}
-                        {data.customerPhone ? <DataRow label="Teléfono" value={data.customerPhone} /> : null}
-                        {data.customerAddress ? <DataRow label="Dirección" value={data.customerAddress} /> : null}
-                        {data.customerCity ? <DataRow label="Ciudad" value={data.customerCity} /> : null}
+                    <View style={styles.metaCell}>
+                        <Text style={styles.metaKey}>FORMA DE PAGO</Text>
+                        <Text style={styles.metaVal}>Crédito 3 días</Text>
+                    </View>
+                    <View style={styles.metaCell}>
+                        <Text style={styles.metaKey}>MEDIO DE PAGO</Text>
+                        <Text style={styles.metaVal}>Transferencia bancaria</Text>
+                    </View>
+                    <View style={styles.metaCellLast}>
+                        <Text style={styles.metaKey}>MONEDA</Text>
+                        <Text style={styles.metaVal}>COP – Peso colombiano</Text>
                     </View>
                 </View>
 
-                {/* ─── TABLE ─── */}
-                <View style={styles.tableWrapper}>
+                {/* ── BODY ── */}
+                <View style={styles.body}>
+
+                    {/* ── PARTIES ── */}
+                    <View style={styles.parties}>
+                        <View style={styles.partyBox}>
+                            <View style={styles.partyHeader}>
+                                <Text style={styles.partyTitle}>EMISOR / VENDEDOR</Text>
+                            </View>
+                            <DRow label="Razón Social" value="JOSE FRANCISCO ALVAREZ GARCIA" />
+                            <DRow label="Nombre Com." value="LA CASA DEL BOLÍGRAFO DIAMANT'S" />
+                            <DRow label="NIT" value="19096350-0" />
+                            <DRow label="Régimen" value="Simple de Tributación" />
+                            <DRow label="Actividad" value="4761 – Artículos de escritura" />
+                            <DRow label="Email" value="dislacasadelboligrafo@hotmail.com" />
+                            <DRow label="Teléfono" value="302 2887219" />
+                            <DRow label="Dirección" value="CL 145 9 26 TO 2 AP 505, Ibagué, Tolima" />
+                        </View>
+                        <View style={styles.partyBoxLast}>
+                            <View style={styles.partyHeader}>
+                                <Text style={styles.partyTitle}>FACTURADO A / CLIENTE</Text>
+                            </View>
+                            <DRow label="Razón Social" value={data.customerName?.toUpperCase() || 'CONSUMIDOR FINAL'} />
+                            <DRow label="NIT / CC" value={data.customerDoc || 'CONSUMIDOR FINAL'} />
+                            {data.customerEmail ? <DRow label="Email" value={data.customerEmail} /> : null}
+                            {data.customerPhone ? <DRow label="Teléfono" value={data.customerPhone} /> : null}
+                            {data.customerAddress ? <DRow label="Dirección" value={data.customerAddress} /> : null}
+                            {data.customerCity ? <DRow label="Ciudad" value={data.customerCity} /> : null}
+                        </View>
+                    </View>
+
+                    {/* ── TABLE ── */}
                     <View style={styles.tableHead}>
                         <Text style={[styles.th, styles.cNo]}>#</Text>
-                        <Text style={[styles.th, styles.cRef]}>REF.</Text>
-                        <Text style={[styles.th, styles.cDesc, styles.tdLeft]}>DESCRIPCIÓN</Text>
+                        <Text style={[styles.th, styles.cRef]}>REFERENCIA</Text>
+                        <Text style={[styles.th, styles.thLeft, styles.cDesc]}>DESCRIPCIÓN</Text>
                         <Text style={[styles.th, styles.cQty]}>CANT.</Text>
                         <Text style={[styles.th, styles.cUM]}>U/M</Text>
-                        <Text style={[styles.th, styles.cPrice]}>P. UNIT.</Text>
-                        <Text style={[styles.th, styles.cImp]}>IMP.</Text>
-                        <Text style={[styles.th, styles.cSub, styles.tdRight]}>TOTAL</Text>
+                        <Text style={[styles.th, styles.thRight, styles.cPrice]}>PRECIO BASE</Text>
+                        <Text style={[styles.th, styles.cImp]}>IMPUESTO</Text>
+                        <Text style={[styles.th, styles.thRight, styles.cTotal]}>TOTAL ÍTEM</Text>
                     </View>
 
                     {data.items?.map((item: any, i: number) => {
                         const unitBase = Math.round(item.unitPrice / 1.19);
                         const lineTotal = item.unitPrice * item.quantity;
+                        const RowStyle = i % 2 === 0 ? styles.tableRow : styles.tableRowShaded;
                         return (
-                            <View key={i} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
-                                <Text style={[styles.td, styles.cNo]}>{i + 1}</Text>
-                                <Text style={[styles.td, styles.cRef]}>{item.reference || '—'}</Text>
-                                <Text style={[styles.td, styles.cDesc, styles.tdLeft]}>{item.name}</Text>
+                            <View key={i} style={RowStyle}>
+                                <Text style={[styles.td, styles.tdMuted, styles.cNo]}>{i + 1}</Text>
+                                <Text style={[styles.td, styles.tdMuted, styles.cRef]}>{item.reference || '—'}</Text>
+                                <Text style={[styles.td, styles.tdLeft, styles.cDesc]}>{item.name}</Text>
                                 <Text style={[styles.td, styles.cQty]}>{item.quantity}</Text>
-                                <Text style={[styles.td, styles.cUM]}>UND</Text>
-                                <Text style={[styles.td, styles.cPrice, styles.tdRight]}>${unitBase.toLocaleString('es-CO')}</Text>
-                                <Text style={[styles.td, styles.cImp]}>IVA 19%</Text>
-                                <Text style={[styles.td, styles.cSub, styles.tdRight]}>${lineTotal.toLocaleString('es-CO')}</Text>
+                                <Text style={[styles.td, styles.tdMuted, styles.cUM]}>UND</Text>
+                                <Text style={[styles.td, styles.tdRight, styles.cPrice]}>${unitBase.toLocaleString('es-CO')}</Text>
+                                <Text style={[styles.td, styles.tdMuted, styles.cImp]}>IVA 19%</Text>
+                                <Text style={[styles.td, styles.tdRight, styles.cTotal]}>${lineTotal.toLocaleString('es-CO')}</Text>
                             </View>
                         );
                     })}
+
+                    {/* ── BOTTOM ── */}
+                    <View style={styles.bottom}>
+                        <View style={styles.notesBox}>
+                            <Text style={styles.notesTitle}>NOTAS Y CONDICIONES</Text>
+                            <Text style={styles.noteItem}>• Descuento del 10% sobre el valor antes del IVA si paga de contado.</Text>
+                            <Text style={styles.noteItem}>• Unidad de medida: UND = Unidad. Código DIAN: 94.</Text>
+                            <Text style={styles.noteItem}>• Este documento es equivalente a una Factura Electrónica de Venta válida ante la DIAN.</Text>
+                            <Text style={styles.noteItem}>• No somos Agente Retenedor de IVA ni Gran Contribuyente.</Text>
+                        </View>
+
+                        <View style={styles.totalsCard}>
+                            <View style={styles.totalsRow}>
+                                <Text style={styles.totalsLabel}>Subtotal (sin IVA)</Text>
+                                <Text style={styles.totalsValue}>${subtotal.toLocaleString('es-CO')}</Text>
+                            </View>
+                            <View style={styles.totalsRow}>
+                                <Text style={styles.totalsLabel}>IVA 19%</Text>
+                                <Text style={styles.totalsValue}>${iva.toLocaleString('es-CO')}</Text>
+                            </View>
+                            <View style={styles.grandTotalRow}>
+                                <View>
+                                    <Text style={styles.grandLabel}>TOTAL A PAGAR</Text>
+                                </View>
+                                <Text style={styles.grandValue}>${data.total.toLocaleString('es-CO')}</Text>
+                            </View>
+                        </View>
+                    </View>
+
                 </View>
 
-                {/* ─── BOTTOM ─── */}
-                <View style={styles.bottomSection}>
-                    <View style={styles.noteBox}>
-                        <Text style={styles.noteText}>• Si paga de contado, descuente el 10% antes del IVA.</Text>
-                        <Text style={styles.noteText}>• Unidades de medida: UND = Unidad.</Text>
-                        <Text style={styles.noteText}>• Este documento es equivalente a una factura electrónica de venta.</Text>
-                    </View>
-                    <View style={styles.totalsBox}>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>Subtotal (sin IVA)</Text>
-                            <Text style={styles.totalValue}>${subtotal.toLocaleString('es-CO')}</Text>
-                        </View>
-                        <View style={styles.totalRow}>
-                            <Text style={styles.totalLabel}>IVA 19%</Text>
-                            <Text style={styles.totalValue}>${iva.toLocaleString('es-CO')}</Text>
-                        </View>
-                        <View style={styles.grandRow}>
-                            <Text style={styles.grandLabel}>TOTAL A PAGAR</Text>
-                            <Text style={styles.grandValue}>${data.total.toLocaleString('es-CO')}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                {/* ─── SIGNATURES ─── */}
+                {/* ── SIGNATURES ── */}
                 <View style={styles.sigSection}>
                     <View style={styles.sigBox}>
-                        <View style={styles.sigLine} />
-                        <Text style={styles.sigLabel}>Firma Emisor / Vendedor</Text>
-                        <Text style={styles.sigLabel}>LA CASA DEL BOLÍGRAFO DIAMANT'S</Text>
+                        <View style={styles.sigLineTop} />
+                        <Text style={styles.sigName}>LA CASA DEL BOLÍGRAFO DIAMANT'S</Text>
+                        <Text style={styles.sigRole}>Firma y Sello — Emisor</Text>
                     </View>
                     <View style={styles.sigBox}>
-                        <View style={styles.sigLine} />
-                        <Text style={styles.sigLabel}>Firma y Sello Cliente</Text>
-                        <Text style={styles.sigLabel}>{data.customerName?.toUpperCase() || 'CONSUMIDOR FINAL'}</Text>
+                        <View style={styles.sigLineTop} />
+                        <Text style={styles.sigName}>{data.customerName?.toUpperCase() || 'CONSUMIDOR FINAL'}</Text>
+                        <Text style={styles.sigRole}>Firma y Sello — Recibido a Satisfacción</Text>
                     </View>
                 </View>
 
-                {/* ─── FOOTER ─── */}
+                {/* ── FOOTER ── */}
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>Generado por La Casa del Bolígrafo Diamant's | Software Interno</Text>
-                    <Text style={styles.footerPage}>FE-{invoiceRef} — {new Date().toLocaleDateString('es-CO')}</Text>
+                    <View style={styles.footerAccent} />
+                    <View style={styles.footerBar}>
+                        <Text style={styles.footerLeft}>La Casa del Bolígrafo Diamant's  •  NIT 19096350  •  Ibagué, Tolima</Text>
+                        <Text style={styles.footerRight}>{invoiceRef}  •  {new Date().toLocaleDateString('es-CO')}</Text>
+                    </View>
                 </View>
 
             </Page>
